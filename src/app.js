@@ -32,7 +32,7 @@ app.use(fileUpload({
     tempFileDir: "./uploads"
 }));
 
-app.get("/", (req, res) => res.send("🚀 Server Deck-os on"));
+app.get("/", (req, res) => res.send("🚀 Server Geck-core on"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
