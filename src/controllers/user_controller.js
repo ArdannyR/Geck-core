@@ -107,6 +107,8 @@ export const updatePreferences = async (req, res) => {
 export const updateImage = async (req, res) => {
     try {
         const userId = req.user._id;
+        // El frontend debe enviar type: "avatar" o type: "wallpaper" en el form-data
+        const { type = 'wallpaper' } = req.body; 
 
         if (!req.files || !req.files.image) {
             return res.status(400).json({ ok: false, msg: "Debes enviar un archivo en el campo 'image'" });
@@ -121,29 +123,38 @@ export const updateImage = async (req, res) => {
         const userDB = await User.findById(userId);
         if (!userDB) return res.status(404).json({ ok: false, msg: "Usuario no encontrado" });
 
-        if (userDB.preferences?.wallpaperPublicId) {
+        // Eliminar imagen anterior de Cloudinary si existe
+        if (type === 'wallpaper' && userDB.preferences?.wallpaperPublicId) {
             await cloudinary.uploader.destroy(userDB.preferences.wallpaperPublicId).catch(() => {});
+        } else if (type === 'avatar' && userDB.avatarPublicId) {
+            await cloudinary.uploader.destroy(userDB.avatarPublicId).catch(() => {});
         }
 
-        const { secure_url, public_id } = await uploadFileToCloudinary(file.tempFilePath, "VirtualDesk");
+        const folderName = type === 'avatar' ? "VirtualDesk_Avatars" : "VirtualDesk";
+        const { secure_url, public_id } = await uploadFileToCloudinary(file.tempFilePath, folderName);
 
-        await User.findByIdAndUpdate(
-            userId,
-            {
+        // Guardar en la base de datos según el tipo
+        if (type === 'wallpaper') {
+            await User.findByIdAndUpdate(userId, {
                 $set: {
                     "preferences.wallpaperUrl": secure_url,
                     "preferences.wallpaperPublicId": public_id
                 }
-            },
-            { new: true }
-        );
+            });
+        } else {
+            await User.findByIdAndUpdate(userId, {
+                $set: {
+                    avatarUrl: secure_url,
+                    avatarPublicId: public_id
+                }
+            });
+        }
 
         return res.status(200).json({
             ok: true,
-            msg: "Imagen subida correctamente",
-            wallpaperUrl: secure_url,
-            publicId: public_id,
-            preferences: userDB?.preferences || { wallpaperUrl: secure_url }
+            msg: `Imagen de ${type} subida correctamente`,
+            url: secure_url,
+            type: type
         });
     } catch (error) {
         console.error("❌ Error en updateImage:", error);

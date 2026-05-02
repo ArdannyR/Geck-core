@@ -31,6 +31,14 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        avatarUrl: {
+            type: String,
+            default: null
+        },
+        avatarPublicId: {
+            type: String,
+            default: null
+        },
         role: {
             type: String,
             enum: ["student", "admin"],
