@@ -1,7 +1,7 @@
 import Chat from "../models/Chat.js";
 import Message from "../models/Message.js";
+import { uploadFileToCloudinary } from "../helpers/cloudinary.js";
 
-// Función auxiliar para obtener el ID del usuario de forma segura
 const getUserId = (req) => {
     const id = req.user?.id || req.user?._id || req.user?.uid;
     return id ? id.toString() : null;
@@ -89,6 +89,58 @@ export const fetchChats = async (req, res) => {
     } catch (error) {
         console.error("❌ Error en fetchChats:", error);
         return res.status(500).json({ ok: false, msg: "Error al obtener los chats" });
+    }
+};
+
+export const sendAudioMessage = async (req, res) => {
+    try {
+        const { chatId, duration } = req.body;
+        const userId = req.user._id;
+
+        if (!req.files || !req.files.audio) {
+            return res.status(400).json({ ok: false, msg: "No se envió ningún audio" });
+        }
+
+        const file = req.files.audio;
+
+        // 1. Subir a Cloudinary (especificando resource_type: 'auto' para audios)
+        // Usamos la carpeta /tmp/ como configuramos antes para evitar el Error 500 en Render
+        const { secure_url } = await uploadFileToCloudinary(file.tempFilePath, "GeckChat_Audios");
+
+        // 2. Crear el mensaje en la BD con tipo 'audio'
+        const newMessage = await Message.create({
+            chatId,
+            senderId: userId,
+            type: "audio",
+            fileUrl: secure_url,
+            duration: duration || 0,
+            status: "sent"
+        });
+
+        const populatedMessage = await newMessage.populate("senderId", "name email avatarUrl");
+
+        // 3. Actualizar el último mensaje del chat
+        await Chat.findByIdAndUpdate(chatId, { lastMessage: newMessage._id });
+
+        // 4. NOTIFICAR POR SOCKETS (Importante)
+        // Obtenemos la instancia de IO que configuraste en app.js
+        const io = req.app.get("io");
+        const chat = await Chat.findById(chatId);
+        
+        chat.participants.forEach(participantId => {
+            if (participantId.toString() !== userId.toString()) {
+                io.to(participantId.toString()).emit("message_received", populatedMessage);
+            }
+        });
+
+        return res.status(201).json({
+            ok: true,
+            message: populatedMessage
+        });
+
+    } catch (error) {
+        console.error("💥 Error enviando audio:", error);
+        return res.status(500).json({ ok: false, msg: "Error al procesar el audio" });
     }
 };
 

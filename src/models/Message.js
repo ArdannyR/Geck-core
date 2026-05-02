@@ -5,39 +5,57 @@ const messageSchema = new mongoose.Schema(
         chatId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Chat",
-            required: true
+            required: true,
         },
         senderId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: true
+            required: true,
         },
+        // El contenido de texto (ahora opcional porque un mensaje puede ser solo un audio)
         content: {
             type: String,
-            required: true
+            default: "",
+        },
+        // NUEVO: Identificar qué tipo de mensaje es
+        type: {
+            type: String,
+            enum: ["text", "audio", "image", "file"],
+            default: "text",
+        },
+        // NUEVO: La URL del archivo alojado 
+        fileUrl: {
+            type: String,
+            default: null,
+        },
+        // NUEVO (Ideal para audios): Duración en segundos para la UI del reproductor móvil
+        duration: {
+            type: Number,
+            default: null,
         },
         status: {
             type: String,
-            enum: ['sent', 'delivered', 'read'],
-            default: 'sent'
+            enum: ["sent", "delivered", "read"],
+            default: "sent",
         },
         isEdited: {
             type: Boolean,
-            default: false
+            default: false,
         },
         isDeleted: {
             type: Boolean,
-            default: false
+            default: false,
         },
-        deletedFor: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        }]
+        deletedFor: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+    }
 );
-
-messageSchema.index({ chatId: 1, createdAt: -1 });
-messageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 2592000 });
 
 export default mongoose.model("Message", messageSchema);
