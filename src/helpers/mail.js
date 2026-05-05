@@ -40,11 +40,11 @@ export const sendPasswordRecoveryEmail = (userMail, token) => {
 };
 
 export const sendWorkspaceInviteEmail = ({ to, inviterName, workspaceName, token, workspaceId }) => {
-    const acceptUrl = ${process.env.URL_FRONTEND}/workspace/accept/${token};
+    const acceptUrl = `${process.env.URL_FRONTEND}/workspace/accept/${token}`;
     
     return sendMail(
         to,
-        ${inviterName} te invitó a "${workspaceName}" en VirtualDesk,
+        `${inviterName} te invitó a "${workspaceName}" en VirtualDesk`,
         `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #6366f1;">🚀 Invitación a Espacio de Trabajo</h1>

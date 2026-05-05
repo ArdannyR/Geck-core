@@ -27,46 +27,46 @@ const startServer = async () => {
         console.log("✅ Socket conectado:", socket.id);
         
         socket.on("join-workspace-room", (workspaceId) => {
-            socket.join(workspace:${workspaceId});
-            console.log(🏢 Usuario unido a workspace room: workspace:${workspaceId});
+            socket.join(`workspace:${workspaceId}`);
+            console.log(`🏢 Usuario unido a workspace room: workspace:${workspaceId}`);
         });
 
         socket.on("workspace-item-created", (data) => {
             // Broadcast a todos en el workspace EXCEPTO al emisor
-            socket.to(workspace:${data.workspaceId}).emit("item-created", data.item);
+            socket.to(`workspace:${data.workspaceId}`).emit("item-created", data.item);
         });
 
         socket.on("workspace-item-moved", (data) => {
-            socket.to(workspace:${data.workspaceId}).emit("item-moved", {
+            socket.to(`workspace:${data.workspaceId}`).emit("item-moved", {
                 id: data.id,
                 position: data.position
             });
         });
 
         socket.on("workspace-item-renamed", (data) => {
-            socket.to(workspace:${data.workspaceId}).emit("item-renamed", {
+            socket.to(`workspace:${data.workspaceId}`).emit("item-renamed", {
                 id: data.id,
                 name: data.name
             });
         });
 
         socket.on("workspace-item-deleted", (data) => {
-            socket.to(workspace:${data.workspaceId}).emit("item-deleted", {
+            socket.to(`workspace:${data.workspaceId}`).emit("item-deleted", {
                 ids: data.ids
             });
         });
 
         // Ventanas del workspace
         socket.on("workspace-window-open", (data) => {
-            socket.to(workspace:${data.workspaceId}).emit("window-open", data.windowData);
+            socket.to(`workspace:${data.workspaceId}`).emit("window-open", data.windowData);
         });
 
         socket.on("workspace-window-close", (data) => {
-            socket.to(workspace:${data.workspaceId}).emit("window-close", { windowId: data.windowId });
+            socket.to(`workspace:${data.workspaceId}`).emit("window-close", { windowId: data.windowId });
         });
 
         socket.on("workspace-window-move", (data) => {
-            socket.to(workspace:${data.workspaceId}).emit("window-move", {
+            socket.to(`workspace:${data.workspaceId}`).emit("window-move", {
                 windowId: data.windowId,
                 position: data.position
             });
@@ -74,13 +74,14 @@ const startServer = async () => {
 
         // Cursor en tiempo real
         socket.on("workspace-cursor-move", (data) => {
-            socket.to(workspace:${data.workspaceId}).emit("cursor-move", {
+            socket.to(`workspace:${data.workspaceId}`).emit("cursor-move", {
                 userId: data.userId,
                 userName: data.userName,
                 x: data.x,
                 y: data.y
             });
         });
+        
         socket.on("setup", (userId) => {
             socket.join(userId);
             
