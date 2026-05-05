@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { v2 as cloudinary } from "cloudinary";
 import fileUpload from "express-fileupload";
+import fs from "fs";
 
 import authRoutes from "./routers/auth_routes.js";
 import userRoutes from "./routers/user_routes.js";
@@ -34,6 +35,8 @@ app.use(fileUpload({
 }));
 
 app.get("/", (req, res) => res.send("🚀 Server Geck-core on"));
+
+if (!fs.existsSync("./uploads")) fs.mkdirSync("./uploads");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
