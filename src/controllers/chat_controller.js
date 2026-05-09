@@ -137,6 +137,55 @@ export const sendAudioMessage = async (req, res) => {
   }
 };
 
+export const sendFileMessage = async (req, res) => {
+  try {
+    const senderId = getUserId(req);
+    if (!senderId) {
+      return res.status(401).json({ ok: false, msg: 'Usuario no autenticado' });
+    }
+
+    const { chatId } = req.body;
+
+    if (!chatId) {
+      return res.status(400).json({ ok: false, msg: 'chatId es requerido' });
+    }
+
+    if (!req.files || (!req.files.document && !req.files.file)) {
+      return res.status(400).json({ ok: false, msg: 'No se envió ningún archivo adjunto' });
+    }
+
+    const file = req.files.document || req.files.file;
+
+    const { secure_url } = await uploadFileToCloudinary(file.tempFilePath, 'GeckChat_Docs');
+
+    const newMessage = await Message.create({
+      chatId,
+      senderId,
+      content: file.name,
+      type: 'file',
+      fileUrl: secure_url,
+      status: 'sent'
+    });
+
+    await Chat.findByIdAndUpdate(chatId, { lastMessage: newMessage._id });
+
+    const populatedMessage = await newMessage.populate('senderId', 'name email');
+
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`chat:${chatId}`).emit('new_message', populatedMessage);
+    }
+
+    return res.status(201).json({
+      ok: true,
+      message: populatedMessage
+    });
+  } catch (error) {
+    console.error('Error enviando documento:', error);
+    return res.status(500).json({ ok: false, msg: 'Error al procesar el documento' });
+  }
+};
+
 export const sendMessage = async (req, res) => {
   try {
     const senderId = getUserId(req);

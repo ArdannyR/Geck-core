@@ -8,7 +8,8 @@ import {
   fetchMessages,
   editMessage,
   deleteMessage,
-  sendAudioMessage
+  sendAudioMessage,
+  sendFileMessage
 } from '../controllers/chat_controller.js';
 
 const router = Router();
@@ -17,10 +18,12 @@ router.use(verifyAuth);
 router.post('/access', accessChat);
 router.post('/group', createGroupChat);
 router.get('/chat', fetchChats);
+router.post('/chat/file', sendFileMessage);
+router.post('/chat/audio', sendAudioMessage);
 router.post('/message', sendMessage);
 router.put('/message/:messageId', editMessage);
 router.delete('/message/:messageId', deleteMessage);
 router.get('/:chatId/chat', fetchMessages);
-router.post('/chat/audio', sendAudioMessage);
+
 
 export default router;
