@@ -19,7 +19,7 @@ export const getProfile = (req, res) => {
 export const updatePassword = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { passwordactual, passwordnuevo } = req.body;
+    const { passwordactual, passwordnuevo } = req.body || {};
 
     if (!passwordactual || !passwordnuevo) {
       return res.status(400).json({ msg: 'Debes enviar el password actual y el nuevo' });
@@ -29,7 +29,9 @@ export const updatePassword = async (req, res) => {
     if (!userDB) return res.status(404).json({ msg: 'Usuario no encontrado' });
 
     const isPasswordCorrect = await userDB.matchPassword(passwordactual);
-    if (!isPasswordCorrect) return res.status(400).json({ msg: 'Lo sentimos, el password actual no es correcto' });
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ msg: 'Lo sentimos, el password actual no es correcto' });
+    }
 
     userDB.password = await userDB.encryptPassword(passwordnuevo);
     await userDB.save();
