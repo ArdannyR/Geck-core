@@ -4,6 +4,7 @@ import Item from '../models/item.js';
 import { uploadBase64ToCloudinary } from '../helpers/cloudinary.js';
 import { v2 as cloudinary } from 'cloudinary';
 
+// 4 endpoints: chatWithAssistant, generateWallpaper, semanticSearch, improveText
 export const chatWithAssistant = async (req, res) => {
   try {
     const { mensaje } = req.body;

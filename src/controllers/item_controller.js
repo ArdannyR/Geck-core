@@ -4,6 +4,8 @@ import Workspace from '../models/Workspace.js';
 import mongoose from 'mongoose';
 import { uploadFileToCloudinary } from '../helpers/cloudinary.js';
 
+// 11 endpoints: getDesktop, createItem, uploadFileItem, getItemById, renameItem, moveItem, updateBulkPositions, updateTextContent, deleteItem, shareItem, getAllItems
+
 export const getDesktop = async (req, res) => {
   try {
     const myId = req.user._id;

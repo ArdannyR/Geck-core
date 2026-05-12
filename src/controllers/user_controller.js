@@ -5,6 +5,7 @@ import { uploadFileToCloudinary } from '../helpers/cloudinary.js';
 import { v2 as cloudinary } from 'cloudinary';
 import mongoose from 'mongoose';
 
+// 7 endpoints: getProfile, updatePassword, updateProfile, updatePreferences, updateImage, deleteAccount, searchUsers
 export const getProfile = (req, res) => {
   const user = req.user;
 

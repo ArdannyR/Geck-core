@@ -7,6 +7,7 @@ const getUserId = (req) => {
   return id ? id.toString() : null;
 };
 
+// 9 endpoints: accessChat, createGroupChat, fetchChats, sendAudioMessage, sendFileMessage, sendMessage, fetchMessages, editMessage, deleteMessage
 export const accessChat = async (req, res) => {
   try {
     const userId = getUserId(req);
