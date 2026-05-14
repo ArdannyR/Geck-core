@@ -25,6 +25,10 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: null
     },
+    filePublicId: {
+      type: String,
+      default: null
+    },
     duration: {
       type: Number,
       default: null
@@ -43,6 +47,12 @@ const messageSchema = new mongoose.Schema(
       default: false
     },
     deletedFor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    ],
+    readBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

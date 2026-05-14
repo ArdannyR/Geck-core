@@ -5,11 +5,14 @@ import rateLimit from 'express-rate-limit';
 import Message from './models/Message.js';
 import Chat from './models/Chat.js';
 import { Server } from 'socket.io';
+import { initCronJobs } from './helpers/cron_jobs.js';
 
 const onlineUsers = new Map();
 
 const startServer = async () => {
   await connection();
+
+  initCronJobs();
 
   const server = http.createServer(app);
   const io = new Server(server, { cors: { origin: '*' } });

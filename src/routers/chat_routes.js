@@ -9,7 +9,8 @@ import {
   editMessage,
   deleteMessage,
   sendAudioMessage,
-  sendFileMessage
+  sendFileMessage,
+  markChatAsRead
 } from '../controllers/chat_controller.js';
 
 const router = Router();
@@ -24,6 +25,7 @@ router.post('/message', sendMessage);
 router.put('/message/:messageId', editMessage);
 router.delete('/message/:messageId', deleteMessage);
 router.get('/:chatId/chat', fetchMessages);
+router.patch('/:chatId/read', markChatAsRead);
 
 
 export default router;

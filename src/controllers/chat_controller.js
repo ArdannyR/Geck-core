@@ -7,7 +7,6 @@ const getUserId = (req) => {
   return id ? id.toString() : null;
 };
 
-// 9 endpoints: accessChat, createGroupChat, fetchChats, sendAudioMessage, sendFileMessage, sendMessage, fetchMessages, editMessage, deleteMessage
 export const accessChat = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -19,6 +18,10 @@ export const accessChat = async (req, res) => {
 
     if (!otherUserId) {
       return res.status(400).json({ ok: false, msg: 'El userId del destinatario es requerido en el body' });
+    }
+
+    if (userId === otherUserId) {
+      return res.status(400).json({ ok: false, msg: 'No puedes crear un chat contigo mismo' });
     }
 
     let chat = await Chat.findOne({
@@ -93,6 +96,36 @@ export const fetchChats = async (req, res) => {
   }
 };
 
+export const markChatAsRead = async (req, res) => {
+  try {
+    const chatId = req.params.chatId || req.body.chatId;
+    const userId = getUserId(req);
+
+    if (!chatId) {
+      return res.status(400).json({ ok: false, msg: 'chatId es requerido' });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ ok: false, msg: 'Usuario no autenticado' });
+    }
+
+    await Message.updateMany(
+      { chatId, senderId: { $ne: userId }, readBy: { $ne: userId } },
+      { $addToSet: { readBy: userId }, $set: { status: 'read' } }
+    );
+
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`chat:${chatId}`).emit('chat_read', { chatId, userId });
+    }
+
+    return res.status(200).json({ ok: true, msg: 'Mensajes marcados como leídos' });
+  } catch (error) {
+    console.error('Error en markChatAsRead:', error);
+    return res.status(500).json({ ok: false, msg: 'Error al marcar mensajes como leídos' });
+  }
+};
+
 export const sendAudioMessage = async (req, res) => {
   try {
     const { chatId, duration } = req.body;
@@ -104,13 +137,14 @@ export const sendAudioMessage = async (req, res) => {
 
     const file = req.files.audio;
 
-    const { secure_url } = await uploadFileToCloudinary(file.tempFilePath, 'GeckChat_Audios');
+    const { secure_url, public_id } = await uploadFileToCloudinary(file.tempFilePath, 'GeckChat_Audios');
 
     const newMessage = await Message.create({
       chatId,
       senderId: userId,
       type: 'audio',
       fileUrl: secure_url,
+      filePublicId: public_id,
       duration: duration || 0,
       status: 'sent'
     });
@@ -157,7 +191,7 @@ export const sendFileMessage = async (req, res) => {
 
     const file = req.files.document || req.files.file;
 
-    const { secure_url } = await uploadFileToCloudinary(file.tempFilePath, 'GeckChat_Docs');
+    const { secure_url, public_id } = await uploadFileToCloudinary(file.tempFilePath, 'GeckChat_Docs');
 
     const newMessage = await Message.create({
       chatId,
@@ -165,6 +199,7 @@ export const sendFileMessage = async (req, res) => {
       content: file.name,
       type: 'file',
       fileUrl: secure_url,
+      filePublicId: public_id,
       status: 'sent'
     });
 
